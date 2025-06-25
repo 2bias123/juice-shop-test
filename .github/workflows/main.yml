@@ -36,6 +36,13 @@ jobs:
           done
           echo "Juice Shop failed to start";
           exit 1
+      - name: Docker network connectivity test
+        run: |
+          docker pull tenable/was-scanner:latest
+          docker run \
+            --network juice-shop-net \
+            tenable/was-scanner:latest \
+            ping -c 3 juice-shop
 
       - name: Run WAS
         run: |
