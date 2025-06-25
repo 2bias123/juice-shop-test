@@ -46,15 +46,15 @@ jobs:
 
       - name: Run WAS
         run: |
-          docker pull tenable/was-scanner:latest
           docker run \
-            --network juice-shop-net \
-            -e WAS_MODE=cicd \
-            -e PLATFORM_URL=https://sensor.cloud.tenable.com \
-            -e ACCESS_KEY=$ACCESS_KEY \
-            -e SECRET_KEY=$SECRET_KEY \
-            -v ${{ github.workspace }}:/scanner \
-            tenable/was-scanner:latest
+          --network juice-shop-net \
+          --shm-size=2g \
+          -e WAS_MODE=cicd \
+          -e PLATFORM_URL=https://sensor.cloud.tenable.com \
+          -e ACCESS_KEY=$ACCESS_KEY \
+          -e SECRET_KEY=$SECRET_KEY \
+          -v ${{ github.workspace }}:/scanner \
+          tenable/was-scanner:latest
         env:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
