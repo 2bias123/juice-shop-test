@@ -46,7 +46,7 @@ jobs:
             -e PLATFORM_URL=https://sensor.cloud.tenable.com \
             -e ACCESS_KEY=$ACCESS_KEY \
             -e SECRET_KEY=$SECRET_KEY \
-            -v ./:/scanner \
+            -v ${{ github.workspace }}:/scanner \
             tenable/was-scanner:latest
         env:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
