@@ -43,7 +43,6 @@ jobs:
           --network juice-shop-net \
           --shm-size=512m \
           -e WAS_MODE=cicd \
-          -e PLATFORM_URL=https://sensor.cloud.tenable.com \
           -e ACCESS_KEY=$ACCESS_KEY \
           -e SECRET_KEY=$SECRET_KEY \
           -v ./:/scanner \
