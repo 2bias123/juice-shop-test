@@ -36,24 +36,17 @@ jobs:
           done
           echo "Juice Shop failed to start";
           exit 1
-      - name: Docker network connectivity test
-        run: |
-          docker pull tenable/was-scanner:latest
-          docker run \
-          --network juice-shop-net \
-          tenable/was-scanner:latest \
-          curl -v http://juice-shop:3000
 
       - name: Run WAS
         run: |
           docker run \
           --network juice-shop-net \
-          --shm-size=2g \
+          --shm-size=512m \
           -e WAS_MODE=cicd \
           -e PLATFORM_URL=https://sensor.cloud.tenable.com \
           -e ACCESS_KEY=$ACCESS_KEY \
           -e SECRET_KEY=$SECRET_KEY \
-          -v ${{ github.workspace }}:/scanner \
+          -v ./:/scanner \
           tenable/was-scanner:latest
         env:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
