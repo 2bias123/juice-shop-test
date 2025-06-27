@@ -44,7 +44,6 @@ jobs:
 
       - name: Run Tenable Web App Scanner
         run: |
-          docker run --rm --network juice-shop-net curlimages/curl curl http://juice-shop:3000
           docker pull tenable/was-scanner:latest
           docker run \
             --rm \
@@ -52,7 +51,7 @@ jobs:
             -e WAS_MODE=cicd \
             -e ACCESS_KEY=$ACCESS_KEY \
             -e SECRET_KEY=$SECRET_KEY \
-            -e STARTUP_TIMEOUT=60 \
+            -e STARTUP_TIMEOUT=90 \
             -v ./:/scanner \
             tenable/was-scanner:latest
         env:
