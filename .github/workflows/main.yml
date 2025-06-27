@@ -44,6 +44,7 @@ jobs:
 
       - name: Run Tenable Web App Scanner
         run: |
+          docker run --rm --network juice-shop-net curlimages/curl curl http://juice-shop:3000
           docker pull tenable/was-scanner:latest
           docker run \
             --rm \
