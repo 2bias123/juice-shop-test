@@ -1,4 +1,4 @@
-name: CI WAS Scan
+name: Tenable WAS CI Scan
 
 on:
   push:
@@ -9,18 +9,18 @@ on:
       - '**'
 
 jobs:
-  tenablescan:
-    name: was-cicd
+  tenable-was-scan:
+    name: Run Tenable WAS Docker CI/CD Scanner
     runs-on: ubuntu-latest
+
     steps:
-      - name: Clone repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Start network
-        run: |
-          docker network create juice-shop-net
+      - name: Create Docker network
+        run: docker network create juice-shop-net
 
-      - name: Start Juice Shop (background)
+      - name: Start OWASP Juice Shop
         run: |
           docker pull bkimminich/juice-shop
           docker run -d --rm \
@@ -29,27 +29,29 @@ jobs:
             -p 3000:3000 \
             bkimminich/juice-shop
 
-      - name: Wait for Juice Shop to be ready
+      - name: Wait for Juice Shop (internal check)
         run: |
-          for i in {1..10}; do
-            if curl -s http://localhost:3000 > /dev/null; then
-              echo "Juice Shop is up!";
-              exit 0;
+          for i in {1..12}; do
+            if docker run --rm --network juice-shop-net curlimages/curl:latest curl -s http://juice-shop:3000 > /dev/null; then
+              echo "Juice Shop is reachable from Docker network";
+              exit 0
             fi
-            echo "Waiting for Juice Shop...";
+            echo "Waiting for Juice Shop to be ready (internal)...";
             sleep 5
           done
-          echo "Juice Shop failed to start";
+          echo "Juice Shop failed to respond within timeout";
           exit 1
 
-      - name: Run WAS
+      - name: Run Tenable Web App Scanner
         run: |
           docker pull tenable/was-scanner:latest
           docker run \
+            --rm \
             --network juice-shop-net \
             -e WAS_MODE=cicd \
             -e ACCESS_KEY=$ACCESS_KEY \
             -e SECRET_KEY=$SECRET_KEY \
+            -e STARTUP_TIMEOUT=60 \
             -v ./:/scanner \
             tenable/was-scanner:latest
         env:
@@ -57,4 +59,5 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       - name: Cleanup
+        if: always()
         run: docker stop juice-shop || true
