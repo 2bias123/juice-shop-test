@@ -16,10 +16,18 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v3
 
+      - name: Start network
+        run: |
+          docker network create juice-shop-net
+
       - name: Start Juice Shop (background)
         run: |
           docker pull bkimminich/juice-shop
-          docker run -d --rm --name juice-shop -p 3000:3000 bkimminich/juice-shop
+          docker run -d --rm \
+            --name juice-shop \
+            --network juice-shop-net \
+            -p 3000:3000 \
+            bkimminich/juice-shop
 
       - name: Wait for Juice Shop to be ready
         run: |
@@ -38,12 +46,12 @@ jobs:
         run: |
           docker pull tenable/was-scanner:latest
           docker run \
-            --link juice-shop \
+            --network juice-shop-net \
             -e WAS_MODE=cicd \
-            -e ACCESS_KEY=$ACCESS_KEY \
-            -e SECRET_KEY=$SECRET_KEY \
-            -v $(pwd):/scanner \
-            tenable/was-scanner:latest || true
+            -e ACCESS_KEY=2f3865a71175c25b63c651d237b53e23ccfddba3ca0ff3e1d2b0de3fa0019bc0 \
+            -e SECRET_KEY=8855e4186189cd3e15c95bc1f141e4264f34d7e2bb58b8d3aeda17a6eafa34e3 \
+            -v ./:/scanner \
+            tenable/was-scanner:latest
         env:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
