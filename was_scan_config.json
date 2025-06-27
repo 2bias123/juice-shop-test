@@ -1,0 +1,7 @@
+{
+  "name": "Local docker scan",
+  "urls": ["http://juice-shop:3000"],
+  "settings": {
+    "profile": "basic"
+  }
+}

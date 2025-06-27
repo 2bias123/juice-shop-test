@@ -48,8 +48,8 @@ jobs:
           docker run \
             --network juice-shop-net \
             -e WAS_MODE=cicd \
-            -e ACCESS_KEY=2f3865a71175c25b63c651d237b53e23ccfddba3ca0ff3e1d2b0de3fa0019bc0 \
-            -e SECRET_KEY=8855e4186189cd3e15c95bc1f141e4264f34d7e2bb58b8d3aeda17a6eafa34e3 \
+            -e ACCESS_KEY=$ACCESS_KEY \
+            -e SECRET_KEY=$SECRET_KEY \
             -v ./:/scanner \
             tenable/was-scanner:latest
         env:
