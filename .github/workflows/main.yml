@@ -43,7 +43,7 @@ jobs:
           docker pull tenable/was-scanner:latest
           docker run --rm \
             --network juice-shop-net \
-            --shm-size=1g \
+            --ipc=host \
             -v $(pwd):/scanner \
             -e WAS_MODE=cicd \
             -e ACCESS_KEY=${ACCESS_KEY} \
