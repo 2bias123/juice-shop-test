@@ -31,6 +31,10 @@ jobs:
           echo "Timed out." >&2
           exit 1
 
+      - name: Ensure tenable_was.conf is correct
+        run: |
+          head -n 20 tenable_was.conf
+
       - name: Run Tenable WAS Scanner
         env:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
@@ -40,14 +44,14 @@ jobs:
           docker run --rm \
             --network juice-shop-net \
             --shm-size=1g \
-            -v $(pwd):/ci:/scanner \
+            -v $(pwd):/scanner \
             -e WAS_MODE=cicd \
             -e ACCESS_KEY=${ACCESS_KEY} \
             -e SECRET_KEY=${SECRET_KEY} \
             tenable/was-scanner:latest || true
           
           echo "=== scanner.log ==="
-          cat ci/scanner.log || echo "(no scanner.log found)"
+          cat scanner.log || echo "(no scanner.log found)"
 
       - name: Cleanup
         if: always()
