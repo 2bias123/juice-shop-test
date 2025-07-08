@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Start network
-        uses: docker network create juice-shop-net
+        run: docker network create juice-shop-net
 
       - name: Start OWASP Juice Shop
         run: |
