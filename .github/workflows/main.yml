@@ -44,13 +44,14 @@ jobs:
           docker run --rm \
             --network juice-shop-net \
             --shm-size=1g \
-            -v $(pwd):/scanner \
+            -v $(pwd):/ci:/scanner \
             -e WAS_MODE=cicd \
             -e ACCESS_KEY=${ACCESS_KEY} \
             -e SECRET_KEY=${SECRET_KEY} \
             tenable/was-scanner:latest || true
+          
           echo "=== scanner.log ==="
-          cat scanner.log || echo "(no scanner.log found)"
+          cat ci/scanner.log || echo "(no scanner.log found)"
 
       - name: Cleanup
         if: always()
