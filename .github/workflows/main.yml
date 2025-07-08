@@ -29,17 +29,18 @@ jobs:
             -p 3000:3000 \
             bkimminich/juice-shop
           
-      - name: Wait for Juice Shop
+      - name: Wait for Juice Shop (in‐network)
         run: |
           for i in {1..12}; do
-            if curl -s http://juice-shop:3000 > /dev/null; then
-              echo "Juice Shop is up!"
+            if docker run --rm --network juice-shop-net curlimages/curl \
+                 curl -s http://juice-shop:3000 > /dev/null; then
+              echo "Juice Shop is up inside the network!"
               exit 0
             fi
-            echo "Waiting for Juice Shop…"
+            echo "Waiting for Juice Shop in‐network… ($i)"
             sleep 5
           done
-          echo "Timed out waiting for Juice Shop."
+          echo "Timed out waiting for Juice Shop in‐network"
           exit 1
 
       - name: Run Tenable Web App Scanner
