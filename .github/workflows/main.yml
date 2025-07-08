@@ -31,10 +31,6 @@ jobs:
           echo "Timed out." >&2
           exit 1
 
-      - name: Ensure tenable_was.conf is correct
-        run: |
-          head -n 20 tenable_was.conf
-
       - name: Run Tenable WAS Scanner
         env:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
