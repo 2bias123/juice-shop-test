@@ -44,11 +44,13 @@ jobs:
           docker run --rm \
             --network juice-shop-net \
             --ipc=host \
+            --security-opt seccomp=unconfined \
+            --cap-add SYS_ADMIN \
             -v $(pwd):/scanner \
             -e WAS_MODE=cicd \
             -e ACCESS_KEY=${ACCESS_KEY} \
             -e SECRET_KEY=${SECRET_KEY} \
-            tenable/was-scanner:latest || true
+            tenable/was-scanner:latest
           
           echo "=== scanner.log ==="
           cat scanner.log || echo "(no scanner.log found)"
