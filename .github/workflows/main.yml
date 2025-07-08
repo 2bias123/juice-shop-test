@@ -1,23 +1,12 @@
 name: Tenable WAS CI Scan
-
-on:
-  push:
-    branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
-
+on: [push, pull_request]
 jobs:
   tenable-was-scan:
-    name: Run Tenable WAS Docker CI/CD Scanner
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Start network
+      - name: Create network
         run: docker network create juice-shop-net
 
       - name: Start OWASP Juice Shop
@@ -28,50 +17,40 @@ jobs:
             --network juice-shop-net \
             -p 3000:3000 \
             bkimminich/juice-shop
-          
-      - name: Wait for Juice Shop (in‐network)
+
+      - name: Wait for Juice Shop (host port)
         run: |
           for i in {1..12}; do
-            if docker run --rm --network juice-shop-net curlimages/curl \
-                 curl -s http://juice-shop:3000 > /dev/null; then
-              echo "Juice Shop is up inside the network!"
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Juice Shop is up!"
               exit 0
             fi
-            echo "Waiting for Juice Shop in‐network… ($i)"
+            echo "Waiting… ($i)"
             sleep 5
           done
-          echo "Timed out waiting for Juice Shop in‐network"
+          echo "Timed out." >&2
           exit 1
 
-      - name: Ensure config is present
+      - name: Ensure tenable_was.conf is correct
         run: |
-          ls -1
-          echo "Contents of tenable_was.conf:"
-          sed -n '1,20p' tenable_was.conf || true
+          head -n 20 tenable_was.conf
 
-      - name: Run Tenable Web App Scanner
-        run: |
-          docker pull tenable/was-scanner:latest
-          docker run \
-            --network juice-shop-net \
-            -v $(pwd):/scanner \
-            -t \
-            -e WAS_MODE=cicd \
-            -e ACCESS_KEY=${ACCESS_KEY} \
-            -e SECRET_KEY=${SECRET_KEY} \
-            tenable/was-scanner
-          echo "--- scanner.log ---"
-          cat scanner.log
+      - name: Run Tenable WAS Scanner
         env:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-
-
-      - name: Dump Scanner Log
-        if: always()
         run: |
+          docker pull tenable/was-scanner:latest
+          docker run --rm \
+            --network juice-shop-net \
+            --shm-size=1g \
+            -v $(pwd):/scanner \
+            -e WAS_MODE=cicd \
+            -e ACCESS_KEY=${ACCESS_KEY} \
+            -e SECRET_KEY=${SECRET_KEY} \
+            tenable/was-scanner:latest || true
           echo "=== scanner.log ==="
-          cat scanner.log || echo "(no log found)"
+          cat scanner.log || echo "(no scanner.log found)"
 
       - name: Cleanup
         if: always()
