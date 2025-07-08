@@ -33,7 +33,7 @@ jobs:
         run: |
           docker pull tenable/was-scanner:latest
           docker run \
-            -network juice-shop-net
+            -network juice-shop-net \
             -v $(pwd):/scanner \
             -t \
             -e WAS_MODE=cicd \
