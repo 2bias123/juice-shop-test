@@ -2,55 +2,60 @@ name: Tenable WAS CI Scan
 
 on:
   push:
-    branches: ['**']
+    branches:
+      - '**'
   pull_request:
-    branches: ['**']
+    branches:
+      - '**'
 
 jobs:
   tenable-was-scan:
+    name: Run Tenable WAS Docker CI/CD Scanner
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 1) Start Juice Shop on default bridge
+      - name: Start network
+        run: docker network create juice-shop-net
+
       - name: Start OWASP Juice Shop
         run: |
           docker pull bkimminich/juice-shop
           docker run -d --rm \
             --name juice-shop \
+            --network juice-shop-net \
             -p 3000:3000 \
             bkimminich/juice-shop
-
-      # 2) Wait for it to be reachable
+          
       - name: Wait for Juice Shop
         run: |
           for i in {1..12}; do
-            if curl -s http://localhost:3000 > /dev/null; then
+            if curl -s http://juice-shop:3000 > /dev/null; then
               echo "Juice Shop is up!"
               exit 0
             fi
             echo "Waiting for Juice Shop…"
             sleep 5
           done
-          echo "Juice Shop failed to start in time."
+          echo "Timed out waiting for Juice Shop."
           exit 1
 
-      # 3) Run the scanner with --link
-      - name: Run Tenable WAS Scanner
-        env:
-          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      - name: Run Tenable Web App Scanner
         run: |
           docker pull tenable/was-scanner:latest
-          docker run --rm \
-            --link juice-shop:juice-shop \
+          docker run \
+            --network juice-shop-net \
             -v $(pwd):/scanner \
+            -t \
             -e WAS_MODE=cicd \
             -e ACCESS_KEY=${ACCESS_KEY} \
             -e SECRET_KEY=${SECRET_KEY} \
-            tenable/was-scanner:latest
+            tenable/was-scanner
+        env:
+          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
       - name: Cleanup
         if: always()
