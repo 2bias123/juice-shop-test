@@ -25,19 +25,6 @@ jobs:
             -p 3000:3000 \
             bkimminich/juice-shop
 
-      - name: Wait for Juice Shop (internal check)
-        run: |
-          for i in {1..12}; do
-            if docker run --rm --network juice-shop-net curlimages/curl:latest curl -s http://juice-shop:3000 > /dev/null; then
-              echo "Juice Shop is reachable from Docker network";
-              exit 0
-            fi
-            echo "Waiting for Juice Shop to be ready (internal)...";
-            sleep 5
-          done
-          echo "Juice Shop failed to respond within timeout";
-          exit 1
-
       - name: Run Tenable Web App Scanner
         run: |
           docker pull tenable/was-scanner:latest
